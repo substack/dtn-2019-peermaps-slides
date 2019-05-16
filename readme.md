@@ -45,8 +45,8 @@ database for offline mapping
 ---
 # mapeo
 
-desktop and mobile map editor
-offline p2p sync
+* desktop and mobile map editor
+* offline p2p sync
 
 ---
 # peermaps
@@ -91,7 +91,7 @@ mapeo/osm-p2p;
 peermaps:
 
 * distribute pre-computed planet.osm view (sparse)
-* local edit log builds into a local view  
+* local edit log builds into a local view
 
 ---
 # eyros
@@ -139,7 +139,7 @@ multidimensional binary trees
 [x] level 3:  0   3 5   7 9   11 14  17
 ```
 
-dimension under consideration alternates each level 
+dimension under consideration alternates each level
 
 ---
 # b-tree
@@ -148,7 +148,7 @@ binary tree with >2 children possible on each node
 
 ```
          [ 7,16, , ]
-      __/   |  \______ 
+      __/   |  \______
      /      |         \
 [1,2,5,6 ][9,12, , ][18,21, , ]
 ```
@@ -176,9 +176,10 @@ bkd approach: forest of trees
  B*2**0    B*2**0   B*2**1   B*2**2   B*2**3 ...
            tree 0   tree 1   tree 2   tree 3...
 
-* each tree is empty or full
+each tree is empty or full
 
 ```
+
 
 ---
 # log structured merge trees
@@ -190,7 +191,7 @@ bkd approach: forest of trees
              /\      /  \    /    \   /      \
 [staging]    B*1      B*2      B*4      B*8
   B*1      tree 0   tree 1    tree 2   tree 3
-            FULL     FULL     FULL     EMPTY    
+  FULL      FULL     FULL     FULL     EMPTY
 ```
 
 when staging is full:
@@ -205,23 +206,21 @@ B * (2**0 + 2**0 + 2**1 + 2**2) = B * (2**3)
 ---
 # log structured merge trees
 
-
 ```
-           _n_
-          \    k    n+1
- given:   /__ 2  = 2    - 1
+          _n_
+          \     k    n+1
+ given:   /__  2  = 2    - 1
           k=0
 
-  
-  2**0 + 2**1 + ... + 2**n = 2**(n+1) - 1 
 
+  2**0 + 2**1 + ... + 2**n = 2**(n+1) - 1
   2**0 + 2**1 + ... + 2**n = 2**(n+1) - 2**0
-
   2**0 + 2**0 + 2**1 + ... + 2**n = 2**(n+1)
-  
-  (previously:)
 
+  (previously:)
   B * (2**0 + 2**0 + 2**1 + 2**2) = B * (2**3)
+  (and so:)
+  B * (2**0 + (2**0 + 2**1 + ... + 2**n) = B * (2**(n+1))
 
 ```
 
@@ -231,7 +230,23 @@ https://math.stackexchange.com/questions/1990137/the-idea-behind-the-sum-of-powe
 # log structured merge trees
 
 if batches can be larger than staging,
-minimize the number of
+minimize the number of merge operations with a planning algorithm
+
+``` rust
+let p = plan(
+  // staging deconstructed into bitfield:
+  &bits![0,1,1,0,0,0,1,0,1,1,1,0,1,0,0],
+  // tree size increasing by powers of 2: empty (0) or full (1)
+  &bits![1,0,1,1,1,0,1,0,1,0,0,1,1,1,0]
+);
+// merge operations: (into_tree, staging_inputs, tree_inputs)
+assert_eq!(p, vec![
+  (1,vec![1],vec![]),
+  (5,vec![2],vec![2,3,4]),
+  (7,vec![6],vec![6]),
+  (14,vec![8,9,10,12],vec![8,11,13])
+]);
+```
 
 ---
 # interval tree
@@ -261,6 +276,11 @@ but! each node points at a set of intersecting intervals
 * heavily based on bkd-tree paper design
 * with interval tree capabilities
 
+other goals:
+
+* updates shouldn't replace too much old cache
+* fast batch write speeds
+
 ---
 # eyros: branch
 
@@ -279,7 +299,6 @@ but! each node points at a set of intersecting intervals
 ---
 # eyros: data
 
-
 ```
 # block 0
 [length: u32 (bytes)]
@@ -297,124 +316,10 @@ but! each node points at a set of intersecting intervals
 ```
 
 ---
-#
+# eyros: demo
 
-* based heavily on bkd tree paper
-* with interval tree capabilities
-
-each branch is a mini-tree:
-
----
-# eyros
-
-* data
-* ranges
-* tree0, tree1, tree2, ...
-
----
-# eyros
-
-a point contains N coordinates
-
-each coordinate can be a scalar:
-
-123.456
-
-or an interval:
-
-(5.20,9.45)
-
----
-# eyros
-
-* data is written in large blocks
-* each block has bounding extents
-* rebuild LSM forest out of bounding extents
-
-```
-(((-151.29,-151.28),(+60.69,+60.70)),1001)
-(((-147.72,-147.71),(+64.83,+64.84)),1002)
-(((-88.73,-88.68),(+43.37,+43.43)),1003)
-(((-88.73,-88.68),(+43.37,+43.43)),1003)
-```
-
-append-only data good for p2p distribution
-and good use of cache
-
----
-# eyros
-
-building LSM from much smaller bounding extents fits well with map/reduce
-
-
-
-
-
-
-
-
-
-
----
-
-# maps
-
----
-# projections
-
-proj4
-
----
-# tiles?
-
----
-# how webgl works
-
----
-# p2p
-
-
----
----
-
-
----
-# trees
-
----
-
-binary tree
-
-```
-  
- /
-4
-```
-
-
-
----
-# eyros
-
-* data
-* tree0, tree1, ...
-
----
-# eyros
-
-data block example:
-
-```
-(((-151.29,-151.28),(+60.69,+60.70)),1001)
-(((-147.72,-147.71),(+64.83,+64.84)),1002)
-(((-88.73,-88.68),(+43.37,+43.43)),1003)
-(((-88.73,-88.68),(+43.37,+43.43)),1003)
-```
-
----
-
-
-
+* demo: grow
+* demo: merge
 
 ---
 # swarmhead - cooperative computing cluster
@@ -470,4 +375,47 @@ https://lists.openstreetmap.org/pipermail/tilesathome/2012-February/006707.html
 * mods, admins
 * materialized-group-auth
 * invite codes to join as a worker node/writer
+
+---
+## swarmhead - demo
+
+[demo time]
+
+---
+# graphics layer
+
+* assemble attribute buffers for stuffing into the gpu
+* minimal number of draw calls
+* allow custom proj4 projections
+
+---
+# graphics layer: tiles?
+
+tiles... maybe not needed?
+
+instead: turn database queries into webgl buffers
+
+maybe we will also have tiles eventually too
+
+---
+# graphics: designed around rendering modes
+
+* points - `GL_POINTS` (or `GL_TRIANGLES` on a 2-triangle quad)
+* lines - packs into `GL_TRIANGLE_STRIP`
+* triangles - `GL_TRIANGLES` (fill) and `GL_TRIANGLE_STRIP` (border)
+
+Q: triangulate at runtime or pack into file format?
+
+https://github.com/peermaps/docs/blob/master/bufferschema.md
+
+---
+# mixmap: demo
+
+* https://substack.net/wip/shadytile0.html
+* dat://81e8ab9b6944e5263ff517be5e9c002446a8a881eff74c1df9ad3fbd6d875da2/
+* https://mixmap-ne2swr-cities-demo-substack.hashbase.io/
+
+---
+
+__END__
 
