@@ -7,6 +7,7 @@ peer to peer cartography
 * https://bits.coop
 
 ---
+# mapping projects
 
 * osm-p2p - database for offline mapping
 * mapeo - offline desktop/mobile gui for building maps
@@ -202,29 +203,6 @@ when staging is full:
 ```
 B * (2**0 + 2**0 + 2**1 + 2**2) = B * (2**3)
 ```
-
----
-# log structured merge trees
-
-```
-          _n_
-          \     k    n+1
- given:   /__  2  = 2    - 1
-          k=0
-
-
-  2**0 + 2**1 + ... + 2**n = 2**(n+1) - 1
-  2**0 + 2**1 + ... + 2**n = 2**(n+1) - 2**0
-  2**0 + 2**0 + 2**1 + ... + 2**n = 2**(n+1)
-
-  (previously:)
-  B * (2**0 + 2**0 + 2**1 + 2**2) = B * (2**3)
-  (and so:)
-  B * (2**0 + (2**0 + 2**1 + ... + 2**n) = B * (2**(n+1))
-
-```
-
-https://math.stackexchange.com/questions/1990137/the-idea-behind-the-sum-of-powers-of-2#1990146
 
 ---
 # log structured merge trees
